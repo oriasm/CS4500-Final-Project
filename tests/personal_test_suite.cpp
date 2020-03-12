@@ -8,6 +8,7 @@
 #include "dataframe/basic_row.cpp"
 #include "dataframe/basic_dataframe.cpp"
 #include "dataframe/basic_example.cpp"
+#include "sorer/sorer.cpp"
 
 int main(int argc, char **argv)
 {

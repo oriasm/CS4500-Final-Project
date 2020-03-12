@@ -21,15 +21,13 @@ public:
   bool accept(Row &r)
   {
     size_t width = r.width();
+    row_sum = 0;
     for (size_t index = 0; index < width; index++)
     {
       int val = r.get_int(index);
       row_sum += val;
     }
-
-    size_t idx = r.get_idx();
-
-    printf("Sum of row %zu is %i\n", idx, row_sum);
+    
     df_sum += row_sum;
     return true;
   }

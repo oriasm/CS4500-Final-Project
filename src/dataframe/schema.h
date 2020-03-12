@@ -105,7 +105,6 @@ public:
     else
     {
       // nullptr = no column name
-      printf("*HELLO WORLD*");
       col_names->push(name);
     }
 
