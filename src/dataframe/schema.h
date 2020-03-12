@@ -159,6 +159,7 @@ public:
       String *current = array->get(index);
       if (search->equals(current))
       {
+        delete search;
         return index;
       }
     }

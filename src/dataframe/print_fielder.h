@@ -30,7 +30,7 @@ public:
 
     void accept(String *s)
     {
-        char *val = s->steal();
+        char *val = s->c_str();
         printf("\"%s\" ", val);
     }
 

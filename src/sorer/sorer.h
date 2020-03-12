@@ -186,6 +186,7 @@ DataFrame *create_dataframe(Schema *schema, FieldArray **columnar, char *file)
 
                     String *val = get_string(file, start, end);
                     row->set(j, val);
+                    delete val;
                     break;
                 }
                 default:

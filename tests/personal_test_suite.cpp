@@ -2,12 +2,12 @@
 #include "test_utils.cpp"
 #include <stdlib.h>
 #include <stdio.h>
-#include "array/basic_array.cpp"
-#include "dataframe/basic_column.cpp"
-#include "dataframe/basic_schema.cpp"
-#include "dataframe/basic_row.cpp"
-#include "dataframe/basic_dataframe.cpp"
-#include "dataframe/basic_example.cpp"
+// #include "array/basic_array.cpp"
+// #include "dataframe/basic_column.cpp"
+// #include "dataframe/basic_schema.cpp"
+// #include "dataframe/basic_row.cpp"
+// #include "dataframe/basic_dataframe.cpp"
+// #include "dataframe/basic_example.cpp"
 #include "sorer/sorer.cpp"
 
 int main(int argc, char **argv)
