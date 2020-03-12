@@ -122,6 +122,11 @@ void complex_sorer()
     // Verify length
     GT_EQUALS(df->nrows(), 3);
 
+    // Operations
+    GT_EQUALS(df->get_int(5, 2), 3);
+    df->set(5, 2, 10);
+    GT_EQUALS(df->get_int(5, 2), 10);
+
     delete df;
     exit(0);
 }
