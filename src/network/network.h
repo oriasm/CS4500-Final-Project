@@ -11,8 +11,9 @@
 #include <cmath>
 #include <cassert>
 #include <poll.h>
+#include <thread>
 #include "../utilities/object.h"
-#include "../utilities/array.h"
+#include "peer_array.h"
 
 // Size of REG msg
 const size_t REG_SIZE = 32;
@@ -20,6 +21,8 @@ const size_t REG_SIZE = 32;
 const size_t MSG_SIZE = 4096;
 // socket timeout
 const nfds_t TIMEOUT = 100;
+// # of file descriptors
+const nfds_t NUM_FD = 50;
 
 // Creates a generic Socket Object capable of binding to an ip and port
 class Socket : public Object
@@ -31,30 +34,21 @@ public:
     int my_fd;
     // my address
     struct sockaddr_in my_addr;
-    // registered peers' port numbers
-    // stored in host byte order
-    IntArray *peer_ports;
-    // registered peers' opened sockets
-    IntArray *peer_socks;
-    // registered peers' ip addresses
-    StringArray *peer_ips;
-    // registered peers' node ids
-    IntArray *peer_ids;
+    // array of peers
+    PeerArray *peers;
     // my info
     int my_port;
     char *my_ip;
     int my_id;
-    struct pollfd fds[2];
+    struct pollfd *fds;
 
     // Constructor to create socket bound to given ip and port
     Socket(char *ip, int port)
     {
         // Iniatialize vars
-        peer_ports = new IntArray();
-        peer_socks = new IntArray();
-        peer_ips = new StringArray();
-        peer_ids = new IntArray();
+        peers = new PeerArray();
         peers_registered = 0;
+
         // save my contact info
         my_port = port;
         my_ip = new char[INET_ADDRSTRLEN];
@@ -62,7 +56,7 @@ public:
         my_id = -1;
 
         // create socket
-        assert((my_fd = socket(AF_INET, SOCK_STREAM, 0)) != 0);
+        assert((my_fd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0)) != 0);
 
         // assign IP & port
         my_addr.sin_family = AF_INET;
@@ -78,7 +72,8 @@ public:
         assert(bind(my_fd, (struct sockaddr *)&my_addr, sizeof(my_addr)) >= 0);
         assert(listen(my_fd, 3) >= 0);
 
-        //Create pollfd with file descriptors (stdin, my_fd)
+        //Add stdin and my fd to array of fd
+        fds = new pollfd[NUM_FD];
         fds[0].fd = STDIN_FILENO;
         fds[0].events = POLLIN;
         fds[1].fd = my_fd;
@@ -91,17 +86,15 @@ public:
         // close sockets
         for (int i = 0; i < peers_registered; i++)
         {
-            close(peer_socks->get(i));
+            close(peers->get(i)->socket);
         }
         close(my_fd);
 
-        delete peer_ports;
-        delete peer_socks;
-        delete peer_ips;
+        delete peers;
     }
 
     // Called in subclasses to begin executing a specific socket's function
-    virtual void start() { perror("Cannot call start on a base Socket, can only be called with subclasses"); }
+    virtual void start() {}
 
     /** PRIVATE FUNCTIONS **/
 
@@ -119,7 +112,7 @@ public:
     // Sends the given msg
     // Returns the file descriptor associated with that peer's socket
     // Port is in host byte order
-    virtual int contact_peer_(char *ip, int port, char *msg)
+    virtual int contact_peer_(Peer *peer, char *msg)
     {
         int peer_sock;
         struct sockaddr_in peer_addr;
@@ -127,11 +120,11 @@ public:
         assert((peer_sock = socket(AF_INET, SOCK_STREAM, 0)) >= 0);
         // set server addr
         peer_addr.sin_family = AF_INET;
-        peer_addr.sin_port = htons(port);
+        peer_addr.sin_port = htons(peer->port);
         // check ip address
-        if (inet_pton(AF_INET, ip, &peer_addr.sin_addr.s_addr) <= 0)
+        if (inet_pton(AF_INET, peer->ip, &peer_addr.sin_addr.s_addr) <= 0)
         {
-            printf("\nInvalid address/ Address not supported \n");
+            printf("\nInvalid address/ Address not supported: %s\n", peer->ip);
             exit(-1);
         }
 
@@ -151,37 +144,43 @@ public:
         while (true)
         {
             // when ret > 0, we have a msg on one of the file descriptors
-            ret = poll(fds, 2, TIMEOUT);
+            ret = poll(fds, peers_registered + 2, TIMEOUT);
 
             if (ret == -1)
             {
-                perror("poll");
+                printf("Polling error");
                 exit(1);
             }
 
-            // message available on stdin
-            if (fds[0].revents & POLLIN)
+            for (int index = 0; index < peers_registered + 2; index++)
             {
-                parse_msg_(STDIN_FILENO);
-            }
-            // message available on my file descriptor
-            if (fds[1].revents & POLLIN)
-            {
-                // accept msg on my_fd
-                struct sockaddr_in client_addr;
-                socklen_t len = sizeof(client_addr);
-                int conn_fd = accept(my_fd, (struct sockaddr *)&client_addr, &len);
-                // read and parse msg
-                parse_msg_(conn_fd, client_addr);
+                struct pollfd curr_fd = fds[index];
+                if (curr_fd.revents & POLLIN)
+                {
+                    if (curr_fd.fd == my_fd)
+                    {
+                        // accept msg on my_fd
+                        struct sockaddr_in client_addr;
+                        socklen_t len = sizeof(client_addr);
+                        int conn_fd = accept(curr_fd.fd, (struct sockaddr *)&client_addr, &len);
+                        // read and parse msg
+                        parse_msg_(conn_fd, client_addr);
+                    }
+                    else
+                    {
+
+                        parse_msg_(curr_fd.fd);
+                    }
+                }
             }
         }
     }
 
     // Sub classes override to read and parse msgs on the given file descriptor and sender's info
-    virtual void parse_msg_(int fd, sockaddr_in &client_addr) { perror("base class Socket cannot parse a message"); }
+    virtual void parse_msg_(int fd, sockaddr_in &client_addr) { printf("base class Socket cannot parse a message"); }
 
     // sub classes override to read and parse msgs on stdin
-    virtual void parse_msg_(int fd) { perror("base class Socket cannot parse a message"); }
+    virtual void parse_msg_(int fd) { printf("base class Socket cannot parse a message"); }
 };
 
 // A ServerSocket object that functions as a server, receving msgs from clients
@@ -195,6 +194,7 @@ public:
     // Server begins waiting for clients
     virtual void start()
     {
+        // std::thread *polling = new std::thread(&ServerSocket::poll_for_msgs, this);
         poll_for_msgs();
     }
 
@@ -211,15 +211,15 @@ public:
 
         // get msg type
         char *type = strtok(incoming, "\n");
+        if (!type)
+            return;
 
         if (strcmp(type, "KILL") == 0)
         {
-            // char *msg = "KILL ";
             for (int i = 0; i < peers_registered; i++)
             {
-                int port = peer_ports->get(i);
-                char *ip = peer_ips->get(i)->c_str();
-                contact_peer_(ip, port, type);
+                Peer *peer = peers->get(i);
+                contact_peer_(peer, type);
             }
 
             exit(0);
@@ -245,9 +245,10 @@ public:
         for (int i = 0; i < peers_registered; i++)
         {
             // get client info
-            int port = peer_ports->get(i);
-            char *ip = peer_ips->get(i)->c_str();
-            int id = peer_ids->get(i);
+            Peer *peer = peers->get(i);
+            int port = peer->port;
+            char *ip = peer->ip;
+            int id = peer->id;
 
             // put each port and ip on new line
             char *sm_buffer = new char[32];
@@ -272,22 +273,20 @@ public:
         // Last client added is new
         int target_node = peers_registered - 1;
         // get new client info
-        int port_new = peer_ports->get(target_node);
-        char *ip_new = peer_ips->get(target_node)->c_str();
+        Peer *latest = peers->get(target_node);
 
         // construct message: [client IP] [client PORT] for each peer info
         char *msg = generate_client_list_();
 
         // Send new client first message
-        contact_peer_(ip_new, port_new, msg);
+        contact_peer_(latest, msg);
 
         // send clients an update
         for (int i = 0; i < target_node; i++)
         {
-            int port = peer_ports->get(i);
-            char *ip = peer_ips->get(i)->c_str();
-            contact_peer_(ip, port, msg);
-            // send(peer_socks->get(i), msg, strlen(msg), 0);
+            Peer *curr = peers->get(i);
+            // contact_peer_(curr, msg);
+            send(curr->socket, msg, strlen(msg), 0);
         }
 
         delete msg;
@@ -315,10 +314,10 @@ public:
         printf("<---From client %d at <%s:%d>: REG\n", id, client_ip, port);
 
         // save client info
-        peer_socks->push(socket_fd);
-        peer_ports->push(port);
-        peer_ips->push(new String(client_ip));
-        peer_ids->push(id);
+        Peer *peer = new Peer(port, socket_fd, client_ip, id);
+        peers->push(peer);
+        fds[peers_registered + 2].fd = socket_fd;
+        fds[peers_registered + 2].events = POLLIN;
         peers_registered += 1;
 
         return true;
@@ -330,6 +329,8 @@ class ClientSocket : public Socket
 public:
     char *server_ip;
     int server_port;
+    int server_fd;
+    std::thread *polling;
 
     // Constructor to create network object bound to given ip
     ClientSocket(char *ip, int port) : Socket(ip, port) {}
@@ -346,10 +347,17 @@ public:
         unsigned int my_port = ntohs(my_addr.sin_port);
         char *msg = new char[REG_SIZE];
         sprintf(msg, "REG %u\n", my_port);
+        // make server a 'peer'
+        Peer *server = new Peer(server_port, -1, server_ip, -1);
         // send to server
-        contact_peer_(ip, port, msg);
+        server_fd = contact_peer_(server, msg);
+
+        // add server to list of fds to poll
+        fds[2].fd = server_fd;
+        fds[2].events = POLLIN;
         // wait for msgs
-        poll_for_msgs();
+        polling = new std::thread(&ServerSocket::poll_for_msgs, this);
+        // poll_for_msgs();
     }
 
     // Sends a message to a client
@@ -360,25 +368,65 @@ public:
 
         for (int i = 0; i < peers_registered; i++)
         {
-            if (peer_ids->get(i) == peer_id)
+            if (peers->get(i)->id == peer_id)
             {
-                // int possible_sock = peer_socks->get(i);
-                // // Check if we have a socket open already
-                // if (possible_sock != -1)
-                // {
-                //     printf("old socket %d\n", possible_sock);
-                //     send(possible_sock, formatted, strlen(formatted), 0);
-                // }
-                // open new connection
-                char *ip = peer_ips->get(i)->c_str();
-                int port = peer_ports->get(i);
-                int peer_sock = contact_peer_(ip, port, formatted);
-                peer_socks->set(i, peer_sock);
+                Peer *curr = peers->get(i);
+                int possible_sock = curr->socket;
+                // Check if we have a socket open already
+                if (possible_sock != -1)
+                {
+                    send(possible_sock, formatted, strlen(formatted), 0);
+                }
+                else
+                {
+                    // open new connection
+                    int peer_sock = contact_peer_(curr, formatted);
+                    // curr->socket = peer_sock;
+                    fds[i + 3].fd = peer_sock;
+                    fds[i + 3].events = POLLIN;
+                }
             }
         }
     }
 
     /** PRIVATE METHODS **/
+
+    void poll_for_msgs()
+    {
+        int ret;
+        while (true)
+        {
+            // when ret > 0, we have a msg on one of the file descriptors
+            ret = poll(fds, peers_registered + 3, TIMEOUT);
+
+            if (ret == -1)
+            {
+                printf("Polling error");
+                exit(1);
+            }
+
+            for (int index = 0; index < peers_registered + 3; index++)
+            {
+                struct pollfd curr_fd = fds[index];
+                if (curr_fd.revents & POLLIN && curr_fd.fd != -1)
+                {
+                    if (curr_fd.fd == my_fd)
+                    {
+                        // accept msg on my_fd
+                        struct sockaddr_in client_addr;
+                        socklen_t len = sizeof(client_addr);
+                        int conn_fd = accept(curr_fd.fd, (struct sockaddr *)&client_addr, &len);
+                        // read and parse msg
+                        parse_msg_(conn_fd, client_addr);
+                    }
+                    else
+                    {
+                        parse_msg_(curr_fd.fd);
+                    }
+                }
+            }
+        }
+    }
 
     // Used by base class to parse msgs from socket
     void parse_msg_(int fd, sockaddr_in &client_addr)
@@ -399,11 +447,14 @@ public:
         // incoming msg is a KILL command
         if (strcmp(incoming, "KILL") == 0)
         {
+            polling->join();
             exit(0);
         }
 
         // get msg type
         char *type = strtok(incoming, " \0");
+        if (!type)
+            return;
 
         // incoming msg is a command from stdin
         if (strcmp(type, "MSG") == 0 && fd == STDIN_FILENO)
@@ -422,7 +473,7 @@ public:
             char *peer = strtok(NULL, " ");
             // get actual msg
             char *actual_msg = strtok(NULL, "\r");
-            handle_incoming_msg(peer, actual_msg);
+            handle_incoming_msg(fd, peer, actual_msg);
         }
         // incoming msg is a directory message from server
         else if (strcmp(type, "DIR") == 0)
@@ -484,12 +535,11 @@ public:
         // line read from stdin is not null terminated
         payload[msg_len] = '\0';
 
-        // printf("got: %s %s %s\n", type, id_ptr, msg);
         send_msg_to_client(payload, dest);
     }
 
     // parses char arrays from socket to print incoming msg to stdout
-    void handle_incoming_msg(char *peer_src, char *payload)
+    void handle_incoming_msg(int fd, char *peer_src, char *payload)
     {
         int id;
         sscanf(peer_src, "%d", &id);
@@ -506,8 +556,12 @@ public:
         // find clients information
         else
         {
-            port = peer_ports->get(index);
-            ip = peer_ips->get(index)->c_str();
+            Peer *peer = peers->get(index);
+            port = peer->port;
+            ip = peer->ip;
+            peer->socket = fd;
+            fds[index + 3].fd = fd;
+            fds[index + 3].events = POLLIN;
         }
         printf("<---From client %d at <%s:%d>: %s\n", id, ip, port, payload);
     }
@@ -518,7 +572,8 @@ public:
     {
         for (int i = 0; i < peers_registered; i++)
         {
-            int curr_id = peer_ids->get(i);
+            Peer *peer = peers->get(i);
+            int curr_id = peer->id;
             if (curr_id == id)
             {
                 return i;
@@ -532,7 +587,7 @@ public:
     {
         for (int i = 0; i < peers_registered; i++)
         {
-            int curr_id = peer_ids->get(i);
+            int curr_id = peers->get(i)->id;
             if (curr_id == id)
             {
                 // we already have this clients info
@@ -541,10 +596,9 @@ public:
             }
         }
 
-        peer_ips->push(new String(ip));
-        peer_ports->push(port);
-        peer_ids->push(id);
-        peer_socks->push(-1);
+        // save info
+        Peer *peer = new Peer(port, -1, ip, id);
+        peers->push(peer);
         peers_registered += 1;
     }
 };
