@@ -279,10 +279,10 @@ void dataframe_map()
     df->add_row(*row2);
     df->add_row(*row3);
 
-    // Verify printed statement on console
     SumRower *rower = new SumRower();
     df->map(*rower);
-    GT_EQUALS(rower->df_sum, 109);
+    printf("sum %d\n", rower->df_sum);
+    GT_EQUALS(rower->df_sum, 67);
 
     delete schema;
     delete df;

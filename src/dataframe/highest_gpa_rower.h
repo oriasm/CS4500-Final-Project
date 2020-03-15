@@ -36,20 +36,23 @@ public:
     // representing a student and their grades
     bool accept(Row &r)
     {
-        // Expecting a row with a 'SFFF' type
+        // Expecting a row with a 'SF*' type
         size_t width = r.width();
-        assert(r.width() == 4);
+        assert(width > 1);
 
         // Get student name
         String *val = r.get_string(0);
         String *student = new String(*val);
 
-        // Calculate avg of grades
-        float one = r.get_float(1);
-        float two = r.get_float(2);
-        float three = r.get_float(3);
-        float row_avg = (one + two + three) / 3;
-        printf("grade of student %s is %f\n", val->c_str(), row_avg);
+        float current = 0;
+        float row_avg = 0;
+        for (size_t i = 1; i < width; i++)
+        {
+            // Calculate avg of grades
+            current += r.get_float(i);
+            row_avg = current / (width - 1);
+        }
+
         students->push(student);
         df_avgs->push(row_avg);
 
@@ -59,7 +62,7 @@ public:
     float getHigestAverage()
     {
         float max = 0;
-        size_t found = 0;
+        // size_t found = 0;
         for (size_t index = 0; index < df_avgs->length(); index++)
         {
             // Calc max
@@ -67,12 +70,9 @@ public:
             if (current > max)
             {
                 max = current;
-                found = index;
+                // found = index;
             }
         }
-
-        char *name = students->get(found)->c_str();
-        printf("Top grade was %f from student %s\n", max, name);
         return max;
     }
 

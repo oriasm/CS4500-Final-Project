@@ -78,7 +78,7 @@ public:
     for (size_t index = 0; index < columns->length(); index++)
     {
       Object *col_ptr = columns->get(index);
-      Column *column = dynamic_cast<Column *>(col_ptr);
+      Column *column = dynamic_cast<Column *>(col_ptr);      
       delete column;
     }
     delete columns;
@@ -392,19 +392,6 @@ public:
     return schema_->width();
   }
 
-  /** Takes in an array of Objects (Rows) and returns the row object
-   * at the given index
-   * Used internally by methods to access ObjectArray as Array of Rows
-   **/
-  Row *process_row(ObjectArray *rows, size_t index)
-  {
-    // Cast object in array to row
-    Object *curr = rows->get(index);
-    Row *row = dynamic_cast<Row *>(curr);
-    assert(row);
-    return row;
-  }
-
   /** Visit rows in order */
   void map(Rower &r)
   {
@@ -473,14 +460,11 @@ public:
   {
     // New df
     DataFrame *filtered = new DataFrame(*schema_);
-    // Get array of rows
-    ObjectArray *array_rows = create_rows();
-    size_t length = array_rows->length();
+    size_t length = nrows();
     for (size_t index = 0; index < length; index++)
     {
       // Get the row object
-      Row *row = process_row(array_rows, index);
-
+      Row *row = create_one_row(index);
       // Rower accepts row
       bool keep = r.accept(*row);
       delete row;
@@ -496,7 +480,6 @@ public:
         delete copy;
       }
     }
-    delete array_rows;
 
     return filtered;
   }
@@ -537,49 +520,18 @@ public:
     return curr;
   }
 
-  /** Creates an Array of rows from all the values in this df
-   * methods who call this are internal and must free each object in array
-   */
-  ObjectArray *create_rows()
-  {
-    return create_rows(0, nrows());
-  }
-
-  /** Creates an Array of rows from all the values in this df from row 
-   * start to row end
-   * Methods who call this are internal and must free each object in array
-   */
-  ObjectArray *create_rows(size_t start, size_t end)
-  {
-    ObjectArray *rows = new ObjectArray();
-    for (size_t row_index = start; row_index < end; row_index++)
-    {
-      Row *curr = create_one_row(row_index);
-      rows->push(curr);
-    }
-
-    return rows;
-  }
-
   /** Print the dataframe in SoR format to standard output. */
   void print()
   {
-    // Get array of rows
-    ObjectArray *array_rows = create_rows();
-    size_t length = array_rows->length();
+    size_t length = nrows();
     for (size_t index = 0; index < length; index++)
     {
-      // Cast each object row
-      Object *curr = array_rows->get(index);
-      Row *row = dynamic_cast<Row *>(curr);
-      assert(row);
+      Row *row = create_one_row(index);
       // Create PrintFielder Object
       PrintFielder *printer = new PrintFielder();
       row->visit(index, *printer);
       delete printer;
       delete row;
     }
-
-    delete array_rows;
   }
 };

@@ -105,7 +105,6 @@ public:
     else
     {
       // nullptr = no column name
-      printf("*HELLO WORLD*");
       col_names->push(name);
     }
 
@@ -160,6 +159,7 @@ public:
       String *current = array->get(index);
       if (search->equals(current))
       {
+        delete search;
         return index;
       }
     }
