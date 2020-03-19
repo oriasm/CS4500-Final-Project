@@ -522,8 +522,23 @@ public:
     return curr;
   }
 
+  /** Serializes this Dataframe into a char array */
   char *serialize() {
-    return "";
+    StrBuff *serial = new StrBuff();
+    // add type to serial
+    serial->c("{Dataframe,");
+    // serialize schema
+    char *schema_serial = schema_->serialize();
+    serial->c("schema:");
+    serial->c(schema_serial);
+    // serialize array of columns
+    char * columns_serial = columns->serialize();
+    serial->c(", columns:");
+    serial->c(columns_serial);
+
+    // close dataframe bracket
+    serial->c("}");
+    return Serial::extract_char_(serial);
   }
 
   /** Print the dataframe in SoR format to standard output. */
@@ -541,6 +556,7 @@ public:
     }
   }
 
+  /** Creates a schema with the given number of columns of the given type */
   static Schema *createSchema(size_t size, char typ)
   {
     Schema *sch = new Schema();
@@ -555,6 +571,9 @@ public:
     return sch;
   }
 
+  /** Creates a new Dataframe containing one row with all the values in the given array,
+   *  saves it in the given kvstore with the given key
+   */
   static DataFrame *fromArray(Key &key, KVStore &store, size_t size, float *values)
   {
     // create schema with 'size' number of floats

@@ -191,4 +191,31 @@ public:
   {
     return num_rows;
   }
+
+  /** Serializes this schema into a char array */
+  char *serialize()
+  {
+    StrBuff *serial = new StrBuff();
+    serial->c("{Schema,");
+    // serialize schema string
+    char *schema_str = schema->c_str;
+    serial->c("schema:");
+    serial->c(schema_str);
+
+    // serialize num rows
+    char *rows = new char[32];
+    sprintf(rows, "%zu", num_rows);
+    serial->c(",num_rows:");
+    serial->c(rows);
+
+    // serialize num columns
+    char *columns = new char[32];
+    sprintf(columns, "%zu", num_columns);
+    serial->c(", num_columns:");
+    serial->c(columns);
+
+    delete[] columns;
+    delete[] rows;
+    return Serial::extract_char_(serial);
+  }
 };
