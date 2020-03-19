@@ -2,6 +2,7 @@
 #pragma once
 #include "../utilities/array.h"
 #include "../utilities/string.h"
+#include "../utilities/serial.h"
 #include <cassert>
 
 /*************************************************************************
@@ -217,6 +218,6 @@ public:
 
     delete[] columns;
     delete[] rows;
-    return Serial::extract_char_(serial);
+    return extract_char_(serial);
   }
 };
