@@ -4,6 +4,8 @@
 #include "column.h"
 #include "rower.h"
 #include "print_fielder.h"
+#include "../kvstore/key.h"
+#include "../kvstore/kv_store.h"
 
 /****************************************************************************
  * DataFrame::
@@ -78,7 +80,7 @@ public:
     for (size_t index = 0; index < columns->length(); index++)
     {
       Object *col_ptr = columns->get(index);
-      Column *column = dynamic_cast<Column *>(col_ptr);      
+      Column *column = dynamic_cast<Column *>(col_ptr);
       delete column;
     }
     delete columns;
@@ -520,6 +522,10 @@ public:
     return curr;
   }
 
+  char *serialize() {
+    return "";
+  }
+
   /** Print the dataframe in SoR format to standard output. */
   void print()
   {
@@ -533,5 +539,48 @@ public:
       delete printer;
       delete row;
     }
+  }
+
+  static Schema *createSchema(size_t size, char typ)
+  {
+    Schema *sch = new Schema();
+    String *empty_name = new String("");
+
+    for (size_t index = 0; index < size; index++)
+    {
+      sch->add_column(typ, empty_name);
+    }
+
+    delete empty_name;
+    return sch;
+  }
+
+  static DataFrame *fromArray(Key &key, KVStore &store, size_t size, float *values)
+  {
+    // create schema with 'size' number of floats
+    Schema *sch = createSchema(size, 'F');
+
+    // create dataframe with that schema
+    DataFrame *df = new DataFrame(*sch);
+
+    // create a single row with all given values
+    Row *row = new Row(*sch);
+    for (size_t index = 0; index < size; index++)
+    {
+      row->set(index, values[index]);
+    }
+
+    // add that row to df
+    df->add_row(*row);
+
+    delete sch;
+    delete row;
+
+    // save df to key and in kvstore
+    Value *df_val = new Value(df);
+    store.put(key, df_val);
+
+    delete df_val;
+    return df;
   }
 };
