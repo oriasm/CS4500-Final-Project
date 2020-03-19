@@ -1,8 +1,8 @@
 test:
-	cd tests; ./personal_test_suite
+	cd tests; cmake .; make ; ./personal_test_suite
 
 build:
-	cd tests; cmake .; make ;
+	cd src; g++ -std=c++11 -Wall -g application/milestone1.cpp
 
 valgrind:
 	cd tests; valgrind ./personal_test_suite

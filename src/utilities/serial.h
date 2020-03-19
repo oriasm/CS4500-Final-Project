@@ -2,6 +2,7 @@
 // LANGUAGE: CwC
 
 #include <string.h>
+#include "object.h"
 #include "string.h"
 #include "helper.h"
 #include "../dataframe/schema.h"

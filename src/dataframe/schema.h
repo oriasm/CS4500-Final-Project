@@ -1,9 +1,10 @@
 //lang::CwC
 #pragma once
-#include "../utilities/array.h"
-#include "../utilities/string.h"
-#include "../utilities/serial.h"
 #include <cassert>
+#include "../utilities/string.h"
+#include "../utilities/array.h"
+#include "../utilities/serial.h"
+
 
 /*************************************************************************
  * Schema::
@@ -200,7 +201,7 @@ public:
     StrBuff *serial = new StrBuff();
     serial->c("{Schema,");
     // serialize schema string
-    char *schema_str = schema->c_str;
+    char *schema_str = schema->val_;
     serial->c("schema:");
     serial->c(schema_str);
 

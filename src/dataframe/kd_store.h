@@ -5,7 +5,7 @@
 #include "../dataframe/dataframe.h"
 
 // A wrapper class for a kv_store that returns and accepts references to a Dataframe as the Values
-class KDStore : public Object
+class KDStore : public KVStore
 {
 public:
     KVStore *store;

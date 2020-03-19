@@ -538,7 +538,7 @@ public:
 
     // close dataframe bracket
     serial->c("}");
-    return Serial::extract_char_(serial);
+    return extract_char_(serial);
   }
 
   /** Print the dataframe in SoR format to standard output. */
@@ -574,7 +574,7 @@ public:
   /** Creates a new Dataframe containing one row with all the values in the given array,
    *  saves it in the given kvstore with the given key
    */
-  static DataFrame *fromArray(Key &key, KVStore &store, size_t size, float *values)
+  static DataFrame *fromArray(Key *key, KVStore *store, size_t size, float *values)
   {
     // create schema with 'size' number of floats
     Schema *sch = createSchema(size, 'F');
@@ -597,7 +597,7 @@ public:
 
     // save df to key and in kvstore
     Value *df_val = new Value(df);
-    store.put(key, df_val);
+    store->put(*key, df_val);
 
     delete df_val;
     return df;

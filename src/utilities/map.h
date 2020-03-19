@@ -1,7 +1,7 @@
 //lang::CwC
 #pragma once
 
-// #include "object.h"
+#include "object.h"
 #include "string.h"
 #include "linked-list.h"
 

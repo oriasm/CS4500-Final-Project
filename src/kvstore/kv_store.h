@@ -4,6 +4,7 @@
 #include "../utilities/serial.h"
 #include "value.h"
 #include "../dataframe/dataframe.h"
+#include "../utilities/serial.h"
 
 // Represents a Key Value store object that uses a Map
 class KVStore : public Object
@@ -39,7 +40,7 @@ public:
     {
         String *serialized = map->get(&key);
         char *serialized_char = serialized->c_str();
-        Object *obj = Deserialize::deserialize(serialized_char);
+        Object *obj = deserialize(serialized_char);
         return new Value(obj);
     }
 
