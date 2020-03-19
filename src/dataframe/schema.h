@@ -1,6 +1,7 @@
 //lang::CwC
 #pragma once
 #include "../utilities/array.h"
+#include "../utilities/string.h"
 #include <cassert>
 
 /*************************************************************************
