@@ -3,7 +3,6 @@
 #include <cassert>
 #include "../utilities/string.h"
 #include "../utilities/array.h"
-#include "../utilities/serial.h"
 
 /*************************************************************************
  * Schema::
