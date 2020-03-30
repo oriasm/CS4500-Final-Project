@@ -5,7 +5,6 @@
 #include "../utilities/array.h"
 #include "../utilities/serial.h"
 
-
 /*************************************************************************
  * Schema::
  * A schema is a description of the contents of a data frame, the schema
@@ -195,6 +194,17 @@ public:
     return num_rows;
   }
 
+  /** Extracts the char* from a StrBuff
+   * Frees the StrBuff, removes a lot of code duplication */
+  char *extract_char_schema_(StrBuff *str_buff)
+  {
+    String *str = str_buff->get();
+    delete str_buff;
+    char *c = str->c_str();
+    delete str;
+    return c;
+  }
+
   /** Serializes this schema into a char array */
   char *serialize()
   {
@@ -219,6 +229,6 @@ public:
 
     delete[] columns;
     delete[] rows;
-    return extract_char_(serial);
+    return extract_char_schema_(serial);
   }
 };

@@ -1,9 +1,9 @@
+#pragma once
 #include <stdlib.h>
 #include "../utilities/object.h"
 #include "../utilities/map.h"
 #include "../utilities/serial.h"
 #include "value.h"
-#include "../dataframe/dataframe.h"
 #include "../utilities/serial.h"
 
 // Represents a Key Value store object that uses a Map
