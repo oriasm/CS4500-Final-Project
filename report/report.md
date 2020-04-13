@@ -1,13 +1,8 @@
-# 4/6/2020 Update
+# 4/13/2020 Update
 
-For this week we were meant to implement the KV Store in a distributed fashion that way it can run across our network in order to support a word-count application. Our implementation is not fully functional but it should be working soon. We continue to run into issues for pair programming as now we are in different time zones, so coordinating our work schedules is difficult. We still have outstanding issues lingering, so those must be addressed before we can fully get Milestone 4 functional. We hope to resolve our outstanding issues early this week to help us prepare to deliver the final Milestone. One issue that we have been constantly facing and forced to fix are issues with serialization and circular dependencies. We believe that our serialization is functional now, but debugging that along with circular dependencies has caused many issues for us and slowed down development greatly. Hopefully we are able to fix our issues from previous weeks as well as our time zone differences to finish the final project for the deadline.
-
-Resolved issues
-- Serialization
-- Circular dependencies
+This week was full implementation of the project. We still had some lingering issues to resolve and were unable to get it all to work. Despite this, we were still able to make some progress this week. What we mostly fixed up was our continuous errors with circular dependencies as well as past bug fixes that continued to nag us. Additionally, in order to promote readability we reformatted some of our code as well as added additional comments and annotations. We still have experienced some issues in regard to pair programming as we are currently on other sides of the country which is why we have not been able to progress as much as we would have liked. Despite all of this, we believe that we put in a good effort in trying to get what we have functional despite these non-ideal circumstances.
 
 Unresolved issues
-- Debugging of KV Store
-- Interconnecting KV with higher level word-count application
+- Full implementation
 
-Going forwards, we plan on finishing our lingering issues when it comes to Milestone 3 and 4. We still have a lot of issues connecting our network together to properly run the KV store on each individual instance, but we feel as though we should be able to finish this by next week.
+Going forwards, there is not much we can do as the class is over. We look forward to reviewing everything in our final code walk.
