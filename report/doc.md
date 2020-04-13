@@ -11,21 +11,5 @@ We chose to incorporate another team's Sorer (danyth) which was written in C++ a
 
 Our network layer contains two classes, ClientSocket and ServerSocket which both handle listening on a certain IP and port. They each have specialized functions that facilitate the registration of mulitple clients to one server. Each class creates a thread to listen for messages on all the relevant file descriptors, while the main thread accepts commands from the user to send messages and display them. 
 
-### Use Cases
-The use of this system will be reading in data and then having additional applications to then process it as desired.
-
-`./eau2 example_data.sor` read in a SoR file and create a Dataframe
-
-` DataFrame *df = get_dataframe("example_data.sor, 0, 500);` internal command to sor adaptor that returns a dataframe
-
-`Schema *schema = new Schema("IIII")` create a new schema of just integers
-
-`DataFrame *df = new DataFrame(*schema);` create an empty DataFrame based upon the Schema read in
-
 ### Open Questions
-1. How important is speed to our client?
-2. What should happen in the case some of the nodes crash?
-3. Will we have to support other files besides SoR in the future?
-
-### Status
-For the assignment, the work we have implemented and tested thus far includes Dataframe and its subsequent parts (Schema, Column, Row..). Further, we have completed the work on the Sorer adaptor which successfully converts .sor files to Dataframes. Auxilary classes for networking are also implemented. We will need to do additional work to deserialize messages from node to node. Right now our network interface simply prints messages to STDOUT. As it is unclear exactly how we would like to process those messages, this will be addressed in the coming weeks. It will require some rework of the network interface. 
+- None at the moment
