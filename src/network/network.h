@@ -24,7 +24,10 @@ const nfds_t TIMEOUT = 100;
 // # of file descriptors
 const nfds_t NUM_FD = 50;
 
-// Creates a generic Socket Object capable of binding to an ip and port
+/**
+ * Author: Maria Orias
+ *  Creates a generic Socket Object capable of binding to an ip and port
+ */
 class Socket : public Object
 {
 public:

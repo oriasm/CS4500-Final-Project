@@ -6,7 +6,10 @@
 #include "../dataframe/dataframe.h"
 #include "../utilities/serial.h"
 
-// Represents a Key Value store object that uses a Map
+/** 
+ * Author: Maria Orias
+ * Represents a Key Value store object that uses a Map
+ */
 class KVStore : public Object
 {
 public:

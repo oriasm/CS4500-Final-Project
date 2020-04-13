@@ -5,16 +5,24 @@
 #include "../dataframe/kd_store.h"
 #include "../dataframe/dataframe.h"
 
+/**
+ *  Author: Maria Orias
+ *  A trivial class that represents an application class that adds some floats to a DF 
+ *  to retreive/verify them.
+ */
 class Trivial : public Application
 {
-    KDStore *kv;
-
 public:
+    /** Default constructor takes in this application's instance or node index 
+     */ 
     Trivial(size_t idx) : Application(idx)
     {
         kv = new KDStore();
     }
 
+    /**
+     * Creates a float array, creates a DF from those values and stores it, verifies its correct
+     */
     void run_()
     {
         size_t SZ = 1000 * 1000;

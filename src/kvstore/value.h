@@ -1,7 +1,10 @@
 #include <stdlib.h>
 #include "../utilities/object.h"
 
-// Holds a pointer to an object that presents a value in a KV store
+/**
+ * Author: Maria Orias
+ * Holds a pointer to an object that presents a value in a KV store
+ */
 class Value : public Object
 {
 public:

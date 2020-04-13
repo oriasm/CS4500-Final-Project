@@ -6,6 +6,10 @@
 #include "../utilities/array.h"
 #include "peer.h"
 
+/**
+ * Author: Maria Orias
+ * A specialized Array of Objects that holds Peers
+ */
 class PeerArray : public Object
 {
 public:

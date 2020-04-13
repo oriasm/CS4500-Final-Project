@@ -14,6 +14,10 @@
 #include "../utilities/object.h"
 #include "../utilities/array.h"
 
+/**
+ * Author: Maria Orias
+ * Represents a peer node in the network and holds identifying information
+ */
 class Peer : public Object
 {
 public:

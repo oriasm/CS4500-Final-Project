@@ -16,6 +16,12 @@
 #include "types.h"
 #include "helper.h"
 
+/**
+ * Author: Maria Orias
+ * A series of helper function to integrate an external team's sorer implementation
+ */
+
+// Converts sorer's Types enum to chars 
 const char *getType(Types t)
 {
     switch (t)
@@ -38,6 +44,7 @@ const char *getType(Types t)
     }
 }
 
+// Creates a schema object from an Array of the Types enum
 Schema *create_schema(TypesArray *types)
 {
     Schema *schema = new Schema();
@@ -52,6 +59,7 @@ Schema *create_schema(TypesArray *types)
     return schema;
 }
 
+// gets a bool in the file at the given start and end bytes
 bool get_bool(char *file, int start, int end)
 {
     // remove empty spaces in front and back
@@ -71,6 +79,7 @@ bool get_bool(char *file, int start, int end)
     }
 }
 
+// returns an integer in the given file at the given start and end bytes
 int get_int(char *file, int start, int end)
 {
     // remove empty spaces in front and back
@@ -88,6 +97,7 @@ int get_int(char *file, int start, int end)
     }
 }
 
+// returns a float in the given file at the given start and end bytes
 float get_float(char *file, int start, int end)
 {
     // remove empty spaces in front and back
@@ -105,6 +115,7 @@ float get_float(char *file, int start, int end)
     }
 }
 
+// returns a string in the given file at the given start and end bytes
 String *get_string(char *file, int start, int end)
 {
 
@@ -134,6 +145,10 @@ String *get_string(char *file, int start, int end)
     }
 }
 
+/**
+ *  creates and returns a dataframe from the given schema (schema), 
+ *  array of value locations (columnar) in the given file(file)
+ */
 DataFrame *create_dataframe(Schema *schema, FieldArray **columnar, char *file)
 {
     size_t columns = schema->width();
@@ -202,6 +217,7 @@ DataFrame *create_dataframe(Schema *schema, FieldArray **columnar, char *file)
     return df;
 }
 
+// creates a dataframe with the fields in a file with the given name, length and offset
 DataFrame *get_dataframe(char *filename, size_t from, size_t len)
 {
     // Make sure the file exists/can be opened

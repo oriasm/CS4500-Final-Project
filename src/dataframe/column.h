@@ -11,7 +11,6 @@ class FloatColumn;
 class StringColumn;
 
 /* Column ::
- *
  * Represents one column of a data frame which holds values of a single type.
  * This abstract class defines methods overriden in subclasses. There is
  * one subclass per element type. Columns are mutable, equality is pointer
