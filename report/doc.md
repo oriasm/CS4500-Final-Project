@@ -10,6 +10,3 @@ We can reuse some code given to us from previous projects such as the `helper.h`
 We chose to incorporate another team's Sorer (danyth) which was written in C++ and can be found in the `src/sorer` directory. We added an additional file to link their helper classes with our dataframe. `src/sorer/sorer.h` takes in a filename, parses it and returns a `Dataframe` object. Our `sorer.h` file works similarly to the `main.cpp` file that was originally created for the sor adaptor, but we modified it to access each element in the .sor file, as opposed to querying it for a specific row and column or column type.
 
 Our network layer contains two classes, ClientSocket and ServerSocket which both handle listening on a certain IP and port. They each have specialized functions that facilitate the registration of mulitple clients to one server. Each class creates a thread to listen for messages on all the relevant file descriptors, while the main thread accepts commands from the user to send messages and display them. 
-
-### Open Questions
-- None at the moment
